@@ -1,43 +1,36 @@
 export default async function handler(req, res) {
   try {
-    const { message, systemPrompt } = req.body;
+    const key = process.env.GROQ_API_KEY;
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
+    if (!key) {
+      return res.status(200).json({
+        ok: false,
+        step: "env_check",
+        error: "GROQ_API_KEY is EMPTY in Vercel"
+      });
+    }
+
+    const response = await fetch("https://api.groq.com/openai/v1/models", {
+      method: "GET",
       headers: {
-        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt || "Ты продавец-консультант магазина техники. Отвечай кратко и по делу."
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        temperature: 0.7
-      })
+        "Authorization": `Bearer ${key}`
+      }
     });
 
-    const data = await response.json();
+    const text = await response.text();
 
-    const answer =
-      data?.choices?.[0]?.message?.content ||
-      data?.error?.message ||
-      JSON.stringify(data);
+    return res.status(200).json({
+      ok: true,
+      step: "api_called",
+      raw: text
+    });
 
-    return res.status(200).json({ answer });
-
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      answer: "Server Error"
+  } catch (e) {
+    return res.status(200).json({
+      ok: false,
+      step: "catch_error",
+      error: e.message,
+      stack: e.stack
     });
   }
 }
