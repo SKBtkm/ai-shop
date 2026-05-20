@@ -9,102 +9,163 @@
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", Arial;
-  background: #0b0b0f;
+  background: #0a0a0a;
   color: white;
+  height: 100vh;
   display: flex;
   justify-content: center;
-  align-items: center;
+}
+
+.container {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
   height: 100vh;
 }
 
-/* контейнер */
-.app {
-  width: 420px;
-  height: 600px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 20px;
-  backdrop-filter: blur(20px);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-}
-
-/* чат */
+/* TOP CHAT AREA */
 .chat {
   flex: 1;
-  padding: 15px;
+  padding: 20px;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* сообщения */
+/* MESSAGE */
 .msg {
-  margin: 10px 0;
-  opacity: 0;
-  transform: translateY(10px);
-  animation: fadeIn 0.3s forwards;
+  padding: 12px 14px;
+  border-radius: 14px;
+  max-width: 80%;
+  line-height: 1.4;
+  animation: fade 0.2s ease-in;
 }
 
 .user {
-  text-align: right;
-  color: #7aa2ff;
+  align-self: flex-end;
+  background: #2a2a2a;
 }
 
 .ai {
-  text-align: left;
-  color: #ffffff;
+  align-self: flex-start;
+  background: #161616;
 }
 
-/* input */
-.inputBox {
+@keyframes fade {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* CENTER SCREEN */
+.center {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.title {
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  opacity: 0.9;
+}
+
+/* BUTTONS TKM / RU */
+.langs {
   display: flex;
-  padding: 10px;
-  border-top: 1px solid rgba(255,255,255,0.1);
+  gap: 12px;
+  justify-content: center;
 }
 
-input {
-  flex: 1;
-  padding: 12px;
-  border-radius: 12px;
-  border: none;
-  outline: none;
-  background: rgba(255,255,255,0.08);
-  color: white;
-}
-
-button {
-  margin-left: 10px;
-  padding: 12px 16px;
-  border-radius: 12px;
-  border: none;
-  background: #3b82f6;
-  color: white;
+.lang {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid #333;
   cursor: pointer;
   transition: 0.2s;
 }
 
-button:hover {
+.lang:hover {
+  background: #1f1f1f;
+}
+
+/* INPUT AREA */
+.inputBar {
+  display: flex;
+  padding: 15px;
+  gap: 10px;
+  border-top: 1px solid #222;
+}
+
+input {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  outline: none;
+  background: #1a1a1a;
+  color: white;
+  font-size: 14px;
+}
+
+/* SEND BUTTON (ChatGPT style) */
+.send {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.send:hover {
   transform: scale(1.05);
 }
 
-@keyframes fadeIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.send svg {
+  width: 18px;
+  height: 18px;
+  fill: black;
+}
+
+.hidden {
+  display: none;
 }
 </style>
 </head>
 
 <body>
 
-<div class="app">
+<div class="container">
 
+  <!-- CENTER -->
+  <div class="center" id="center">
+    <div class="title">AI Shop Assistant</div>
+    <div class="langs">
+      <div class="lang" onclick="start('TKM')">TKM</div>
+      <div class="lang" onclick="start('RU')">RU</div>
+    </div>
+  </div>
+
+  <!-- CHAT -->
   <div class="chat" id="chat"></div>
 
-  <div class="inputBox">
-    <input id="msg" placeholder="Напиши товар..." />
-    <button onclick="send()">→</button>
+  <!-- INPUT -->
+  <div class="inputBar">
+    <input id="msg" placeholder="Напиши товар..." onkeydown="handleKey(event)" />
+    <button class="send" onclick="send()">
+      <svg viewBox="0 0 24 24">
+        <path d="M2 21l21-9L2 3v7l15 2-15 2z"/>
+      </svg>
+    </button>
   </div>
 
 </div>
