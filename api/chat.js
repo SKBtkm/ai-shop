@@ -1,44 +1,30 @@
 export default async function handler(req, res) {
   try {
-    const message = req.body?.message;
+    const { message, systemPrompt } = req.body;
 
-    if (!message) {
-      return res.status(400).json({ answer: "no message" });
-    }
-
-    const response = await fetch("https://api.x.ai/v1/chat/completions", {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.XAI_API_KEY}`
+        "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "grok-2-1212",
+        model: "llama-3.3-70b-versatile",
         messages: [
           {
             role: "system",
-            content: "Ты продавец магазина. Отвечай кратко."
+            content: systemPrompt || "Ты продавец-консультант магазина техники. Отвечай кратко и по делу."
           },
           {
             role: "user",
             content: message
           }
-        ]
+        ],
+        temperature: 0.7
       })
     });
 
-    const text = await response.text();
-
-    console.log("RAW XAI RESPONSE:", text);
-
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (e) {
-      return res.status(200).json({
-        answer: "xAI returned non-JSON: " + text
-      });
-    }
+    const data = await response.json();
 
     const answer =
       data?.choices?.[0]?.message?.content ||
@@ -47,11 +33,11 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ answer });
 
-  } catch (err) {
-    console.log("SERVER ERROR:", err);
+  } catch (error) {
+    console.error(error);
 
     return res.status(500).json({
-      answer: err.message
+      answer: "Server Error"
     });
   }
 }
