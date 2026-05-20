@@ -1,5 +1,17 @@
 const chat = document.getElementById("chat");
+const center = document.getElementById("center");
+const input = document.getElementById("msg");
 
+let language = "RU";
+
+/* START SCREEN */
+function start(lang) {
+  language = lang;
+  center.classList.add("hidden");
+  addMessage(`Selected language: ${lang}`, "ai");
+}
+
+/* MESSAGE UI */
 function addMessage(text, type) {
   const div = document.createElement("div");
   div.className = `msg ${type}`;
@@ -8,38 +20,43 @@ function addMessage(text, type) {
   chat.scrollTop = chat.scrollHeight;
 }
 
+/* SEND */
 async function send() {
-  const input = document.getElementById("msg");
   const text = input.value.trim();
-
   if (!text) return;
 
   addMessage(text, "user");
   input.value = "";
 
-  // loading эффект
   const loading = document.createElement("div");
   loading.className = "msg ai";
-  loading.innerText = "печатает...";
+  loading.innerText = "typing...";
   chat.appendChild(loading);
-  chat.scrollTop = chat.scrollHeight;
 
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ message: text })
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: text,
+        systemPrompt: `Language: ${language}. Always respond in this language.`
+      })
     });
 
     const data = await res.json();
 
     loading.remove();
-    addMessage(data.answer || "нет ответа", "ai");
+    addMessage(data.answer, "ai");
 
   } catch (e) {
     loading.remove();
-    addMessage("ошибка сервера", "ai");
+    addMessage("error", "ai");
+  }
+}
+
+/* ENTER SUPPORT */
+function handleKey(e) {
+  if (e.key === "Enter") {
+    send();
   }
 }
