@@ -1,10 +1,10 @@
 export default async function handler(req, res) {
   try {
-    const body = req.body ? req.body : await parseBody(req);
-    const message = body?.message;
+    const body = req.body || {};
+    const message = body.message;
 
     if (!message) {
-      return res.status(400).json({ answer: "no message" });
+      return res.status(400).json({ answer: "нет сообщения" });
     }
 
     const response = await fetch("https://api.x.ai/v1/chat/completions", {
@@ -14,11 +14,11 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${process.env.XAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "grok-beta",
+        model: "grok-2-latest",
         messages: [
           {
             role: "system",
-            content: "Ты помощник магазина. Отвечай кратко, помогай выбрать товар."
+            content: "Ты продавец-консультант в магазине техники. Отвечай кратко и понятно. Если спрашивают товар — помогай выбрать."
           },
           {
             role: "user",
@@ -28,41 +28,23 @@ export default async function handler(req, res) {
       })
     });
 
-    const data = await response.json().catch(() => ({}));
+    const data = await response.json();
 
-    console.log("XAI RESPONSE:", data);
+    console.log("XAI RAW RESPONSE:", data);
 
     const answer =
       data?.choices?.[0]?.message?.content ||
+      data?.message ||
       data?.error?.message ||
-      "empty response";
+      "Не удалось получить ответ от AI";
 
-    res.status(200).json({ answer });
+    return res.status(200).json({ answer });
 
-  } catch (err) {
-    console.error("CRASH ERROR:", err);
+  } catch (error) {
+    console.log("SERVER ERROR:", error);
 
-    res.status(500).json({
-      answer: "server crashed"
+    return res.status(500).json({
+      answer: "Ошибка сервера"
     });
   }
-}
-
-// безопасный парсер body (Vercel fix)
-async function parseBody(req) {
-  return new Promise((resolve) => {
-    let data = "";
-
-    req.on("data", chunk => {
-      data += chunk;
-    });
-
-    req.on("end", () => {
-      try {
-        resolve(JSON.parse(data || "{}"));
-      } catch (e) {
-        resolve({});
-      }
-    });
-  });
 }
