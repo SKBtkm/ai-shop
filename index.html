@@ -1,0 +1,21 @@
+<input id="msg" placeholder="Напиши товар..." />
+<button onclick="test()">Отправить</button>
+
+<div id="chat"></div>
+
+<script>
+async function test() {
+  const input = document.getElementById("msg");
+  const chat = document.getElementById("chat");
+
+  const userText = input.value;
+
+  chat.innerHTML += "<p><b>Ты:</b> " + userText + "</p>";
+
+  const answer = await sendMessage(userText);
+
+  chat.innerHTML += "<p><b>AI:</b> " + answer + "</p>";
+
+  input.value = "";
+}
+</script>
